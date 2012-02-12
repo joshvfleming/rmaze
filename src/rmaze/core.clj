@@ -1,36 +1,11 @@
 (ns rmaze.core
-  (:require [clojure.string :as str]
-            [clojure.data.priority-map :as priority-map])
+  (:use [clojure.data.priority-map :only [priority-map]])
+  (:require [clojure.string :as str])
   (:import [java.io FileReader BufferedReader]))
 
 (defrecord Edge [to cost])
 (defrecord Vertex [name edges])
 (defrecord Graph [vertices])
-
-(defn read-data-line
-  "Reads one line of the data file."
-  [line]
-  (let [vertex (str/split (str/trim line) #"\:")
-        edges (str/split (second vertex) #"\,")
-        edge-comps (map #(str/split % #"\.") edges)]
-    (Vertex. (first vertex)
-             (map #(Edge. (Integer/parseInt (first %))
-                          (Integer/parseInt (second %)))
-                  edge-comps))))
-
-(defn read-data-file
-  "Reads a data file, returning an entity count and data points."
-  [filename]
-  (let [reader (-> filename FileReader. BufferedReader.)
-        lines (line-seq reader)]
-    (Graph. (map read-data-line lines))))
-
-(def myg (read-data-file "resources/graph1.txt"))
-
-(def arad (nth (:vertices myg) 2))
-(def bucharest (nth (:vertices myg) 13))
-(def oradea (nth (:vertices myg) 0))
-(def neamt (nth (:vertices myg) 12))
 
 (defn unroll-path
   [goal parents]
@@ -79,4 +54,42 @@
                             neighbors)
                      (map-parent parents neighbors vertex)))))))))
 
-(map #(:name %) (bfs myg arad bucharest))
+(defn neighbors
+  "Find the neighbors for a given vertex by position."
+  [width height pos]
+  (let [count (* width height)
+        row-pos (mod pos width)
+        at-row-bound? (or (zero? row-pos)
+                          (= row-pos (dec width)))
+        n [(- pos width)
+           (+ pos width)
+           (if at-row-bound? (- pos 1) -1)
+           (if at-row-bound? (+ pos 1) -1)]]
+    (filter #(and (>= % 0) (< % count)) n)))
+
+(defn random-cost
+  [vertex-count]
+  (rand-int (* vertex-count 10)))
+
+(defn generate-maze
+  [width height]
+  (let [vertex-count (* width height)
+        empty-graph (Graph. (vec (take vertex-count (repeat (Vertex. nil [])))))]
+    (loop [graph empty-graph
+           in-maze #{}
+           frontier (priority-map 0 0)]
+      (let [pos (first (peek frontier))]
+        (if (nil? pos)
+          graph
+          (let [vertex (nth (:vertices graph) pos)
+                vertex (assoc vertex :name pos)
+                ns (neighbors width height pos)
+                ns (for [n (filter #(not (in-maze %)) ns)]
+                     [n (random-cost vertex-count)])
+                edges (concat (map #(Edge. (first %) (second %)) ns))
+                vertex (update-in vertex [:edges] #(concat % edges))]
+            (recur (assoc-in graph [:vertices pos] vertex)
+                   (conj in-maze pos)
+                   (if (empty? ns)
+                     (pop frontier)
+                     (apply conj (pop frontier) ns)))))))))
