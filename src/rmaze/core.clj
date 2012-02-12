@@ -3,7 +3,7 @@
   (:require [clojure.string :as str])
   (:import [java.io FileReader BufferedReader]))
 
-(defrecord Edge [to cost])
+(defrecord Edge [to direction cost])
 (defrecord Vertex [name edges])
 (defrecord Graph [vertices])
 
@@ -61,11 +61,11 @@
         row-pos (mod pos width)
         at-row-bound? (or (zero? row-pos)
                           (= row-pos (dec width)))
-        n [(- pos width)
-           (+ pos width)
-           (if at-row-bound? (- pos 1) -1)
-           (if at-row-bound? (+ pos 1) -1)]]
-    (filter #(and (>= % 0) (< % count)) n)))
+        n [{ :pos (- pos width) :direction :north }
+           { :pos (+ pos width) :direction :south }
+           { :pos (if at-row-bound? (- pos 1) -1) :direction :east }
+           { :pos (if at-row-bound? (+ pos 1) -1) :direction :west }]]
+    (filter #(and (>= (:pos %) 0) (< (:pos %) count)) n)))
 
 (defn random-cost
   [vertex-count]
@@ -76,20 +76,44 @@
   (let [vertex-count (* width height)
         empty-graph (Graph. (vec (take vertex-count (repeat (Vertex. nil [])))))]
     (loop [graph empty-graph
-           in-maze #{}
+           in-maze #{0}
            frontier (priority-map 0 0)]
-      (let [pos (first (peek frontier))]
-        (if (nil? pos)
-          graph
-          (let [vertex (nth (:vertices graph) pos)
-                vertex (assoc vertex :name pos)
-                ns (neighbors width height pos)
-                ns (for [n (filter #(not (in-maze %)) ns)]
-                     [n (random-cost vertex-count)])
-                edges (concat (map #(Edge. (first %) (second %)) ns))
-                vertex (update-in vertex [:edges] #(concat % edges))]
+      (if-let [pos (first (peek frontier))]
+        (let [vertex (nth (:vertices graph) pos)
+              vertex (assoc vertex :name pos)
+              ns (neighbors width height pos)
+              ns (for [n (filter #(not (in-maze (:pos %))) ns)]
+                   (assoc n :cost (random-cost vertex-count)))
+              edges (map #(Edge. (:pos %) (:direction %) (:cost %)) ns)
+              vertex (update-in vertex [:edges] #(concat % edges))]
+          (if (empty? ns)
+            (recur graph in-maze (pop frontier))
             (recur (assoc-in graph [:vertices pos] vertex)
-                   (conj in-maze pos)
-                   (if (empty? ns)
-                     (pop frontier)
-                     (apply conj (pop frontier) ns)))))))))
+                   (apply conj in-maze (map #(:pos %) ns))
+                   (apply conj
+                          (pop frontier)
+                          (map #(vec [(:pos %) (:cost %)]) ns)))))
+      graph))))
+
+;(def g (generate-maze 10 10))
+;(map :name (bfs g (first (:vertices g)) (last (:vertices g))))
+
+(defn maze-to-html
+  [g]
+  (str "<div class='container'>"
+       (apply str
+        (map
+         (fn [v]
+           (let [dir-to-i {:north 0 :east 1 :south 2 :west 3}
+                 open-dirs (map #(dir-to-i (:direction %)) (:edges v))
+                 closed-dirs (apply disj #{0 1 2 3} open-dirs)]
+             (apply str (map
+                   (fn [e]
+                     (str "<div class='cell "
+                          (apply str (map #(str "closed-" % " ") closed-dirs))
+                          "'>&nbsp;</div>"))
+                   closed-dirs))))
+         (:vertices g)))
+       "</div>"))
+
+;(println (maze-to-html g))
