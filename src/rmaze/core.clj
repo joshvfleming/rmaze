@@ -1,5 +1,6 @@
 (ns rmaze.core
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [clojure.data.priority-map :as priority-map])
   (:import [java.io FileReader BufferedReader]))
 
 (defrecord Edge [to cost])
