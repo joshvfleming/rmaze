@@ -1,0 +1,20 @@
+Oradea:1.71,7.151
+Zerind:2.75,0.71
+Arad:3.118,1.75,7.140
+Timisoara:2.118,4.111
+Lugoj:3.111,5.70
+Mehadia:4.70,6.75
+Drobeta:5.75,9.120
+Sibiu:0.151,2.140,8.80,10.99
+Rimnicu Vilcea:7.80,9.146,11.97
+Craiova:6.120,8.146,11.138
+Fagaras:7.99,13.211
+Pitesti:8.97,9.138,13.101
+Neamt:15.87
+Bucharest:10.211,16.85,14.90,11.101
+Giurgiu:13.90
+Iasi:12.87,17.92
+Urziceni:13.85,18.98,17.142
+Vaslui:15.92,16.142
+Hirsova:16.98,19.86
+Eforie:18.86
