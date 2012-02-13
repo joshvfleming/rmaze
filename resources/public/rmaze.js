@@ -8,7 +8,7 @@ rmaze = (function() {
 
     rmaze.fetchMaze = function() {
         $.ajax({
-            url: 'maze',
+            url: '/maze?nc=' + (new Date()).getTime(),
             type: 'GET',
             dataType: 'html',
             success: function(data) {
