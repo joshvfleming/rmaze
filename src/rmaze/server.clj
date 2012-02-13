@@ -5,7 +5,8 @@
          nested-params
          multipart-params
          cookies
-         session])
+         session]
+        [ring.adapter jetty])
   (:require [compojure.route :as route]
             [ring.middleware.session.cookie :as cookie]
             [rmaze.view :as view]))
@@ -44,3 +45,5 @@
          (wrap-session {:store cookie-store
                         :cookie-name "rmaze-session"})))
 
+(defn -main [port]
+  (run-jetty app {:port (Integer. port)}))
