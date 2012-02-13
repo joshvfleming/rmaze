@@ -1,10 +1,11 @@
-.container {
-    display: block;
+#content {
+    width: 600px;
+    height: 600px;
+    margin: 20px auto 20px auto;
     border: #000000 1px solid;
-    width: 850px;
-    height: 680px;
-    margin-right: auto;
-    margin-left: auto;
+}
+
+.container {
 }
 
 .controls {
@@ -12,26 +13,26 @@
 }
 
 .cell {
-    border: #ffffff 1px solid;
-    width: 15px;
-    height: 15px;
+    border: #000000 1px solid;
+    width: 18px;
+    height: 18px;
     float: left;
 }
 
-.closed-0 {
-    border-top: #000000 1px solid;
+.open-0 {
+    border-top: #ffffff 1px solid;
 }
 
-.closed-1 {
-    border-right: #000000 1px solid;
+.open-1 {
+    border-right: #ffffff 1px solid;
 }
 
-.closed-2 {
-    border-bottom: #000000 1px solid;
+.open-2 {
+    border-bottom: #ffffff 1px solid;
 }
 
-.closed-3 {
-    border-left: #000000 1px solid;
+.open-3 {
+    border-left: #ffffff 1px solid;
 }
 
 .path-node {
@@ -45,5 +46,10 @@
     width: 31px;
     height: 31px;
     margin: auto;
-    padding-top: 250px;
+    padding-top: 274px;
+}
+
+.instructions {
+    width: 100%;
+    text-align: center;
 }
