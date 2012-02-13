@@ -59,23 +59,34 @@
   [width height pos]
   (let [count (* width height)
         row-pos (mod pos width)
-        at-row-bound? (or (zero? row-pos)
-                          (= row-pos (dec width)))
+        at-left-bound? (zero? row-pos)
+        at-right-bound? (= row-pos (dec width))
         n [{ :pos (- pos width) :direction :north }
            { :pos (+ pos width) :direction :south }
-           { :pos (if at-row-bound? (- pos 1) -1) :direction :east }
-           { :pos (if at-row-bound? (+ pos 1) -1) :direction :west }]]
+           { :pos (if at-right-bound? -1 (+ pos 1)) :direction :east }
+           { :pos (if at-left-bound? -1 (- pos 1)) :direction :west }]]
     (filter #(and (>= (:pos %) 0) (< (:pos %) count)) n)))
+
+(def reverse-direction
+     {:north :south,
+      :east :west,
+      :south :north,
+      :west :east })
 
 (defn random-cost
   [vertex-count]
   (rand-int (* vertex-count 10)))
 
+(defn create-empty-graph
+  [vertex-count]
+  (Graph. (vec (map #(Vertex. % [])
+                    (take vertex-count
+                          (iterate inc 0))))))
+
 (defn generate-maze
   [width height]
-  (let [vertex-count (* width height)
-        empty-graph (Graph. (vec (take vertex-count (repeat (Vertex. nil [])))))]
-    (loop [graph empty-graph
+  (let [vertex-count (* width height)]
+    (loop [graph (create-empty-graph vertex-count)
            in-maze #{0}
            frontier (priority-map 0 0)]
       (if-let [pos (first (peek frontier))]
@@ -85,18 +96,28 @@
               ns (for [n (filter #(not (in-maze (:pos %))) ns)]
                    (assoc n :cost (random-cost vertex-count)))
               edges (map #(Edge. (:pos %) (:direction %) (:cost %)) ns)
-              vertex (update-in vertex [:edges] #(concat % edges))]
+              vertex (update-in vertex [:edges] #(concat % edges))
+              ; add in reverse edges also
+              vertices (map
+                        (fn [e]
+                          (update-in (vertex-from-edge graph e)
+                                     [:edges]
+                                     #(conj %
+                                            (Edge. pos
+                                                   (reverse-direction (:direction e))
+                                                   (:cost e)))))
+                          edges)
+              vertices (conj vertices vertex)
+              vertices (apply assoc (:vertices graph)
+                              (flatten (map #(vec [(:name %) %]) vertices)))]
           (if (empty? ns)
             (recur graph in-maze (pop frontier))
-            (recur (assoc-in graph [:vertices pos] vertex)
+            (recur (assoc-in graph [:vertices] vertices)
                    (apply conj in-maze (map #(:pos %) ns))
                    (apply conj
                           (pop frontier)
                           (map #(vec [(:pos %) (:cost %)]) ns)))))
       graph))))
-
-;(def g (generate-maze 10 10))
-;(map :name (bfs g (first (:vertices g)) (last (:vertices g))))
 
 (defn maze-to-html
   [g]
@@ -107,13 +128,24 @@
            (let [dir-to-i {:north 0 :east 1 :south 2 :west 3}
                  open-dirs (map #(dir-to-i (:direction %)) (:edges v))
                  closed-dirs (apply disj #{0 1 2 3} open-dirs)]
-             (apply str (map
-                   (fn [e]
-                     (str "<div class='cell "
-                          (apply str (map #(str "closed-" % " ") closed-dirs))
-                          "'>&nbsp;</div>"))
-                   closed-dirs))))
+             (str "<div class='cell "
+                  (apply str (map #(str "closed-" % " ") closed-dirs))
+                  "'>&nbsp;</div>")))
          (:vertices g)))
        "</div>"))
 
-;(println (maze-to-html g))
+(defn print-solution
+  [solution]
+  (str "[" (str/join "," (map :name solution)) "]"))
+
+(defn generate-html-page
+  []
+  (let [graph (generate-maze 20 20)
+        solution (bfs graph (first (:vertices graph)) (last (:vertices graph)))
+        content (maze-to-html graph)
+        template (slurp "resources/template.html")
+        content (str/replace template "{{content}}" content)
+        content (str/replace content "{{solution}}" (print-solution solution))]
+    (spit "resources/index.html" content)))
+
+;(generate-html-page)

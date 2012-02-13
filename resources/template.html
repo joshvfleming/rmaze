@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>rmaze</title>
+    <link rel="stylesheet" type="text/css" href="rmaze.css"/>
+    <script type="text/javascript" src="rmaze.js"></script>
+  </head>
+
+  <body>
+    <div>
+      {{content}}
+      <div class='controls'>
+        <a href="#" id="solve-button">Solve it!</a><br/>
+        <a href="#" id="clear-button">Clear</a>
+      </div>
+    </div>
+  </body>
+
+  <script type="text/javascript">
+    rmaze.solution = {{solution}};
+  </script>
+</html>
