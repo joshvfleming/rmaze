@@ -1,7 +1,7 @@
 rmaze
 =====
 
-rmaze is a web service that generates a random maze, and then solves it. "Why would you do this?", you might ask. The answer: for fun!
+rmaze is a web service that generates random mazes, and then solves them. "Why would you do this?", you might ask. The answer: for fun!
 
 Usage
 -----
