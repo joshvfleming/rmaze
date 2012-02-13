@@ -1,9 +1,10 @@
 .container {
+    display: block;
     border: #000000 1px solid;
-    width: 640px;
-    height: 640px;
-    float: left;
-    margin-right: 10px;
+    width: 850px;
+    height: 680px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .controls {
@@ -12,8 +13,8 @@
 
 .cell {
     border: #ffffff 1px solid;
-    width: 30px;
-    height: 30px;
+    width: 15px;
+    height: 15px;
     float: left;
 }
 
@@ -37,4 +38,12 @@
     background-image: url('dot.png');
     background-repeat: no-repeat;
     background-position: center;
+}
+
+.spinner {
+    display: block;
+    width: 31px;
+    height: 31px;
+    margin: auto;
+    padding-top: 250px;
 }
