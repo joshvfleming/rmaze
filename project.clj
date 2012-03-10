@@ -8,6 +8,5 @@
                  [compojure "0.6.5"]
                  [enlive "1.0.0"]
                  [org.clojure/data.json "0.1.2"]]
-  :dev-dependencies [[lein-ring "0.4.5"]
-                     [ring-serve "0.1.0"]]
+  :dev-dependencies [[lein-ring "0.5.4"]]
   :ring {:handler rmaze.server/app})
